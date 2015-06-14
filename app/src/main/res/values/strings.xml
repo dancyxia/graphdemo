@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Graph Demo</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="graph_nodenum">Graph Node Number(3-30)</string>
+    <string name="pref_graphnodecount">pref_graphnodecount</string>
+</resources>
