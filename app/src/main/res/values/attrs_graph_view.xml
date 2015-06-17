@@ -2,5 +2,6 @@
     <declare-styleable name="GraphView">
         <attr name="nodeShape" format="reference" />
         <attr name="edgeColor" format="color" />
+        <attr name="textColor" format="color" />
     </declare-styleable>
 </resources>

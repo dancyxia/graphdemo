@@ -10,5 +10,6 @@
         android:paddingLeft="20dp"
         android:paddingBottom="40dp"
         app:edgeColor="#0000ff"
+        app:textColor="#ffffff"
         app:nodeShape="@drawable/node_shape" />
 </FrameLayout>

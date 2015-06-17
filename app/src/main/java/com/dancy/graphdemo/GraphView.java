@@ -10,6 +10,7 @@ import android.graphics.LightingColorFilter;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -31,7 +32,8 @@ public class GraphView extends View {
     private Rect[] nodeList;
     private Bitmap bm;
     private int nodeSize;
-    private int edgeColor = Color.BLUE; // TODO: use a default from R.color...
+    private int edgeColor = Color.BLUE;
+    private int textColor = Color.WHITE;
 
 //    private Drawable[] mNodeDrawable;
 
@@ -64,23 +66,32 @@ public class GraphView extends View {
         bGraphDataReady = false;
     }
 
+    public Graph getGraph() {
+        return graph;
+    }
+
+    private static Paint textPt;
     private void init(AttributeSet attrs, int defStyle) {
         TypedArray a = this.getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.GraphView,0,0);
         Drawable nodeDrawable = a.getDrawable(R.styleable.GraphView_nodeShape);
         edgeColor = a.getColor(R.styleable.GraphView_edgeColor, Color.BLUE);
+        textColor = a.getColor(R.styleable.GraphView_textColor, Color.WHITE);
         nodeSize = nodeDrawable.getIntrinsicWidth();
 
         bm = Bitmap.createBitmap(nodeSize, nodeSize, Bitmap.Config.ARGB_8888);
         Canvas cv = new Canvas(bm);
         cv.drawARGB(0, 255, 255, 255);
         nodeDrawable.setBounds(0, 0, nodeSize-1, nodeSize-1);
-//        Paint pt = new Paint();
-//        pt.setColor(Color.rgb(0,0,255));
-//        pt.setAntiAlias(true);
         nodeDrawable.draw(cv);
-//        cv.drawCircle(iNodeRadius,iNodeRadius,iNodeRadius, pt);
-    }
 
+        //init text paint
+        textPt = new Paint();
+        textPt.setColor(textColor);
+        textPt.setStrokeWidth(3);
+        textPt.setAntiAlias(true);
+        textPt.setTypeface(Typeface.DEFAULT_BOLD);
+        textPt.setTextSize(nodeSize >> 1);
+    }
 
     private int paddingLeft;
     private int paddingTop;
@@ -91,22 +102,26 @@ public class GraphView extends View {
     private int contentHeight;
     private boolean bGraphDataReady = false;
 
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // TODO: consider storing these as member variables to reduce
-        paddingLeft = getPaddingLeft();
-        paddingTop = getPaddingTop();
-        paddingRight = getPaddingRight();
-        paddingBottom = getPaddingBottom();
+        if (graph == null)
+            return;
 
-        contentWidth = getWidth() - paddingLeft - paddingRight;
-        contentHeight = getHeight() - paddingTop - paddingBottom;
+        if (contentWidth == 0 && contentHeight == 0) {
+            paddingLeft = getPaddingLeft();
+            paddingTop = getPaddingTop();
+            paddingRight = getPaddingRight();
+            paddingBottom = getPaddingBottom();
+
+            contentWidth = getWidth() - paddingLeft - paddingRight;
+            contentHeight = getHeight() - paddingTop - paddingBottom;
+        }
 
         Paint pt = new Paint();
         pt.setColor(edgeColor);
+        //first time draw nodes
         if (!bGraphDataReady) {
             Random rand = new Random();
             rand.setSeed(Calendar.getInstance().getTime().getTime());
@@ -117,30 +132,48 @@ public class GraphView extends View {
                 int y = rand.nextInt(contentHeight - nodeSize);
 
                 insertNodeAt(new Rect(x, y, x + nodeSize - 1, y + nodeSize - 1), i);
-                ColorFilter filter = new LightingColorFilter(0, Color.BLACK);
-                pt.setColorFilter(filter);
+//                ColorFilter filter = new LightingColorFilter(0, Color.RED);
+//                pt.setColorFilter(filter);
                 canvas.drawBitmap(bm, x, y, pt);
+                String value = String.valueOf(i);
+                Rect textRect = new Rect();
+                textPt.getTextBounds(value, 0, value.length(), textRect);
+                canvas.drawText(value, x+((nodeSize-textRect.width())>>1), y+((nodeSize+textRect.height())>>1), textPt);
             }
             bGraphDataReady = true;
-        } else {
+        } else { //redraw node after view is updated
 //            if (isDragging) {
 //                canvas.save();
 //                canvas.clipRect(lastPos.x-iNodeRadius, lastPos.y-iNodeRadius, lastPos.x+iNodeRadius, lastPos.y+iNodeRadius);
 //                canvas.clipRect(sortedNode[touchNode].x - iNodeRadius, sortedNode[touchNode].y - iNodeRadius, sortedNode[touchNode].x + iNodeRadius, sortedNode[touchNode].y + iNodeRadius, Region.Op.UNION);
-////                canvas.drawBitmap(bm, sortedNode[touchNode].x, sortedNode);
+////              canvas.drawBitmap(bm, sortedNode[touchNode].x, sortedNode);
 //            }
 
+            //this is to draw the dragging line
+            if (runningNode != null) {
+                canvas.drawLine(nodeList[touchNode].centerX(), nodeList[touchNode].centerY(), runningNode.centerX(), runningNode.centerY(), pt);
+            }
+
             for (int node : sortedNode) {
-                canvas.drawBitmap(bm, nodeList[node].left, nodeList[node].top, pt);
+                //edge is on the lowest layer
                 for (Graph.Edge edge : graph.getEdges(node)) {
                     canvas.drawLine(nodeList[node].centerX(), nodeList[node].centerY(), nodeList[edge.end].centerX(), nodeList[edge.end].centerY(), pt);
                 }
             }
 
-            if (runningNode != null) {
-                canvas.drawLine(nodeList[touchNode].centerX(), nodeList[touchNode].centerY(), runningNode.centerX(), runningNode.centerY(), pt);
+            for (int node : sortedNode) {
+                canvas.drawBitmap(bm, nodeList[node].left, nodeList[node].top, pt);
+                String value = String.valueOf(node);
+                Rect textRect = new Rect();
+                textPt.getTextBounds(value, 0, value.length(), textRect);
+                canvas.drawText(value, nodeList[node].left + ((nodeSize - textRect.width()) >> 1), nodeList[node].top + ((nodeSize + textRect.height()) >> 1), textPt);
             }
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     private void insertNodeAt(Rect rect, int pos) {

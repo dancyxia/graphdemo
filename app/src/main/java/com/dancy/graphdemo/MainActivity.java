@@ -2,7 +2,6 @@ package com.dancy.graphdemo;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -15,8 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.dancy.graphdemo.pref.SettingActivity;
-import com.dancy.graphdemo.pref.SettingsFragment;
-
 
 public class MainActivity extends ActionBarActivity {
     public static int[] STATE_ACTIVE = {R.attr.state_active};
@@ -62,7 +59,6 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -79,8 +75,8 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-                    Intent intent = new Intent(this, SettingActivity.class);
-                    startActivity(intent);
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -91,7 +87,6 @@ public class MainActivity extends ActionBarActivity {
      */
     public static class GraphFragment extends Fragment {
         public final static String GraphNodeCount = "count";
-        public final static String OperationID = "opid";
         private static GraphFragment f;
         private Graph graph;
 
@@ -146,8 +141,11 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView =inflater.inflate(R.layout.graph_view, container, false);
             GraphView view = (GraphView)rootView.findViewById(R.id.graphview);
-            graph = new Graph(getNodeCount());
-            view.setGraph(graph);
+            graph = view.getGraph();
+            if (graph == null) {
+                graph = new Graph(getNodeCount());
+                view.setGraph(graph);
+            }
             return rootView;
         }
     }
