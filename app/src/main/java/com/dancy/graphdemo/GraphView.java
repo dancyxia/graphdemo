@@ -25,29 +25,23 @@ import java.util.Random;
  * TODO: document your custom view class.
  */
 public class GraphView extends View {
-    private String mExampleString; // TODO: use a default from R.string...
-    private float mExampleDimension = 0; // TODO: use a default from R.dimen...
     private Graph graph;
     private int[] sortedNode;
     private Rect[] nodeList;
     private Bitmap bm;
     private int nodeSize;
-    private int edgeColor = Color.BLUE;
-    private int textColor = Color.WHITE;
+    private int edgeColor;
+    private int textColor;
+    private static Paint textPt;
 
-//    private Drawable[] mNodeDrawable;
+    private int paddingLeft;
+    private int paddingTop;
+    private int paddingRight;
+    private int paddingBottom;
 
-//    private TextPaint mTextPaint;
-//    private float mTextWidth;
-//    private float mTextHeight;
-
-    public GraphView(Context context, Graph graph) {
-        super(context);
-        this.graph = graph;
-        sortedNode = new int[graph.V()];
-        nodeList = new Rect[graph.V()];
-        init(null, 0);
-    }
+    private int contentWidth;
+    private int contentHeight;
+    private boolean bGraphDataReady = true;
 
     public GraphView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -59,18 +53,41 @@ public class GraphView extends View {
         init(attrs, defStyle);
     }
 
+    public Rect[] getNodeList() {
+        return nodeList;
+    }
+
+    public void setNodeList(Rect[] list) {
+        if (graph == null)
+            return;
+        nodeList = list == null ? new Rect[graph.V()] : list;
+    }
+
+    public int[] getSortedNode() {
+        return sortedNode;
+    }
+
+    public void setSortedNode(int[] list) {
+        if (graph == null)
+            return;
+        sortedNode = list == null ? new int[graph.V()] : list;
+    }
+
+    public void reset() {
+        sortedNode = new int[graph.V()];
+        nodeList = new Rect[graph.V()];
+        bGraphDataReady = false;
+    }
+
+
     public void setGraph(Graph g) {
         graph = g;
-        sortedNode = new int[g.V()];
-        nodeList = new Rect[g.V()];
-        bGraphDataReady = false;
     }
 
     public Graph getGraph() {
         return graph;
     }
 
-    private static Paint textPt;
     private void init(AttributeSet attrs, int defStyle) {
         TypedArray a = this.getContext().getTheme().obtainStyledAttributes(attrs, R.styleable.GraphView,0,0);
         Drawable nodeDrawable = a.getDrawable(R.styleable.GraphView_nodeShape);
@@ -92,15 +109,6 @@ public class GraphView extends View {
         textPt.setTypeface(Typeface.DEFAULT_BOLD);
         textPt.setTextSize(nodeSize >> 1);
     }
-
-    private int paddingLeft;
-    private int paddingTop;
-    private int paddingRight;
-    private int paddingBottom;
-
-    private int contentWidth;
-    private int contentHeight;
-    private boolean bGraphDataReady = false;
 
     @Override
     protected void onDraw(Canvas canvas) {

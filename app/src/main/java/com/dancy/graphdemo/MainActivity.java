@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,73 +81,5 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class GraphFragment extends Fragment {
-        public final static String GraphNodeCount = "count";
-        private static GraphFragment f;
-        private Graph graph;
-
-        public static GraphFragment getInstance() {
-            if (f == null) {
-                initFragment(Graph.DEFAULT_COUNT);
-            }
-            return f;
-        }
-
-        public static GraphFragment getInstance(int count) {
-            if (f == null) {
-                initFragment(count);
-            } else {
-                regenerateGraph(f);
-            }
-            return f;
-        }
-
-        private static void initFragment(int count) {
-            f = new GraphFragment();
-            Bundle args = new Bundle();
-            args.putInt(GraphNodeCount, count);
-            f.setArguments(args);
-            f.graph = new Graph(count);
-        }
-
-        private static void regenerateGraph(GraphFragment fragment) {
-            int count = fragment.getArguments().getInt(GraphNodeCount, Graph.DEFAULT_COUNT);
-            fragment.graph = new Graph(count);
-            GraphView view = (GraphView)fragment.getView().findViewById(R.id.graphview);
-            view.setGraph(fragment.graph);
-            view.invalidate();
-        }
-
-        public void setMoveOperation(GraphView.OPERATION op) {
-            GraphView view = (GraphView)getView().findViewById(R.id.graphview);
-            view.setOperationID(op);
-        }
-
-        public void setNodeCount(int count) {
-            getArguments().putInt(GraphNodeCount, count);
-            regenerateGraph(this);
-        }
-
-        public int getNodeCount() {
-            return getArguments().getInt(GraphNodeCount, Graph.DEFAULT_COUNT);
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView =inflater.inflate(R.layout.graph_view, container, false);
-            GraphView view = (GraphView)rootView.findViewById(R.id.graphview);
-            graph = view.getGraph();
-            if (graph == null) {
-                graph = new Graph(getNodeCount());
-                view.setGraph(graph);
-            }
-            return rootView;
-        }
     }
 }

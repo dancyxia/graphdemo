@@ -1,5 +1,6 @@
 package com.dancy.graphdemo;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -7,13 +8,17 @@ import java.util.List;
  * Created by dancy on 6/8/2015.
  */
 
-public class Graph {
+public class Graph implements Serializable {
+
+
+    public enum DIRECT {DIRECTED, UNDIRECTED};
     private final List<Edge>[] edges;
     private DIRECT direct;
-    public enum DIRECT {DIRECTED, UNDIRECTED};
+
     public final static int DEFAULT_COUNT = 10;
     public final static int MINNODENUM = 2;
     public final static int MAXNODENUM = 50;
+//    private static final long serialVersionUID = ;
 
     public Graph() {
         this(DEFAULT_COUNT, DIRECT.UNDIRECTED);
@@ -56,7 +61,7 @@ public class Graph {
             throw new IndexOutOfBoundsException(String.format("vertex %d is not between %d and %d %n", v, 0, edges.length - 1));
     }
 
-    public static class Edge {
+    public static class Edge implements Serializable {
         int end;
         int weight;
 
