@@ -31,6 +31,8 @@ public class GraphFragment extends android.support.v4.app.Fragment {
     public final static String ARG_SORTEDNODE = "SORTEDNODE";
     public final static String ARG_NODELIST = "NODELIST";
     public final static String ARG_GRAPH    = "GRAPHOBJ";
+    public final static String ARG_CONTENTWIDTH = "CONTENTWIDTH";
+    public final static String ARG_CONTENTHEIGHT = "CONTENTHEIGHT";
 
     private static GraphFragment f;
 //    private OnFragmentInteractionListener mListener;
@@ -98,6 +100,8 @@ public class GraphFragment extends android.support.v4.app.Fragment {
         args.putIntArray(ARG_SORTEDNODE, view.getSortedNode());
         args.putParcelableArray(ARG_NODELIST, view.getNodeList());
         args.putSerializable(ARG_GRAPH, view.getGraph());
+        args.putInt(ARG_CONTENTWIDTH, view.getContentWidth());
+        args.putInt(ARG_CONTENTHEIGHT, view.getContentHeight());
     }
 
     @Override
@@ -123,6 +127,8 @@ public class GraphFragment extends android.support.v4.app.Fragment {
                 //don't cast Parcelable[] to Rect[] directly. This is for type safety.
                 view.setNodeList(toTypedList(nodeList).toArray(new Rect[nodeList.length]));
                 view.setSortedNode(args.getIntArray(ARG_SORTEDNODE));
+                view.setContentWidth(args.getInt(ARG_CONTENTWIDTH));
+                view.setContentHeight(args.getInt(ARG_CONTENTHEIGHT));
             }
          } else {
             view.setGraph(new Graph(Graph.DEFAULT_COUNT));

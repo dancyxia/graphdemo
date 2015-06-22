@@ -53,6 +53,22 @@ public class GraphView extends View {
         init(attrs, defStyle);
     }
 
+    public int getContentWidth() {
+        return contentWidth;
+    }
+
+    public void setContentWidth(int width) {
+        contentWidth = width;
+    }
+
+    public int getContentHeight() {
+        return contentHeight;
+    }
+
+    public void setContentHeight(int height) {
+        contentHeight = height;
+    }
+
     public Rect[] getNodeList() {
         return nodeList;
     }
@@ -117,16 +133,25 @@ public class GraphView extends View {
         if (graph == null)
             return;
 
-        if (contentWidth == 0 && contentHeight == 0) {
-            paddingLeft = getPaddingLeft();
-            paddingTop = getPaddingTop();
-            paddingRight = getPaddingRight();
-            paddingBottom = getPaddingBottom();
+        int tmpWidth = 0;
+        int tmpHeight = 0;
+        paddingLeft = getPaddingLeft();
+        paddingTop = getPaddingTop();
+        paddingRight = getPaddingRight();
+        paddingBottom = getPaddingBottom();
 
-            contentWidth = getWidth() - paddingLeft - paddingRight;
-            contentHeight = getHeight() - paddingTop - paddingBottom;
-        }
+        tmpWidth = getWidth() - paddingLeft - paddingRight;
+        tmpHeight = getHeight() - paddingTop - paddingBottom;
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
 
+        if ((contentWidth == 0 && contentHeight == 0) || !bGraphDataReady) {
+            contentWidth = tmpWidth;
+            contentHeight = tmpHeight;
+         }
+
+        scaleX = (float)tmpWidth/(float)contentWidth;
+        scaleY = (float)tmpHeight/(float)contentHeight;
         Paint pt = new Paint();
         pt.setColor(edgeColor);
         //first time draw nodes
@@ -159,22 +184,33 @@ public class GraphView extends View {
 
             //this is to draw the dragging line
             if (runningNode != null) {
-                canvas.drawLine(nodeList[touchNode].centerX(), nodeList[touchNode].centerY(), runningNode.centerX(), runningNode.centerY(), pt);
+                canvas.drawLine(nodeList[touchNode].centerX()*scaleX, nodeList[touchNode].centerY()*scaleY, runningNode.centerX()*scaleX, runningNode.centerY()*scaleY, pt);
             }
+
+            int[] convertedX = new int[nodeList.length];
+            int[] convertedY = new int[nodeList.length];
+            int nodeRadius = nodeSize >> 1;
 
             for (int node : sortedNode) {
                 //edge is on the lowest layer
+                convertedX[node] = (int) (nodeList[node].left * scaleX);
+                convertedY[node] = (int) (nodeList[node].top * scaleY);
+            }
+
+            //first layer: draw edges
+            for (int node : sortedNode) {
                 for (Graph.Edge edge : graph.getEdges(node)) {
-                    canvas.drawLine(nodeList[node].centerX(), nodeList[node].centerY(), nodeList[edge.end].centerX(), nodeList[edge.end].centerY(), pt);
+                    canvas.drawLine(convertedX[node]+nodeRadius, convertedY[node]+nodeRadius, convertedX[edge.end]+nodeRadius, convertedY[edge.end]+nodeRadius, pt);
                 }
             }
 
+            //2nd layer: draw nodes
             for (int node : sortedNode) {
-                canvas.drawBitmap(bm, nodeList[node].left, nodeList[node].top, pt);
+                canvas.drawBitmap(bm, convertedX[node], convertedY[node], pt);
                 String value = String.valueOf(node);
                 Rect textRect = new Rect();
                 textPt.getTextBounds(value, 0, value.length(), textRect);
-                canvas.drawText(value, nodeList[node].left + ((nodeSize - textRect.width()) >> 1), nodeList[node].top + ((nodeSize + textRect.height()) >> 1), textPt);
+                canvas.drawText(value, convertedX[node] + ((nodeSize - textRect.width()) >> 1), convertedY[node] + ((nodeSize + textRect.height()) >> 1), textPt);
             }
         }
     }
